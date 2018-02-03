@@ -1,1 +1,1 @@
-__all__ = ["kreacli", "kreacore", "kreapractice", "kreaproblem", "kreaprogram"]
+__all__ = ["kreacli", "kreacore", "kreapractice", "kreaproblem", "kreaprogram", "krealog"]
