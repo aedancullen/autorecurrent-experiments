@@ -1,0 +1,23 @@
+plugins {
+  id "com.linkedin.python-cli" version "0.6.17"
+}
+
+
+dependencies {
+	python 'pypi:llvmlite:0.21.0'
+}
+
+python {
+    details.pythonVersion = '3.6'
+}
+
+repositories {
+	pyGradlePyPi()
+	ivy{
+		url "deps"
+		layout 'pattern' , {
+			artifact '[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]'
+			ivy '[organisation]/[module]/[revision]/[module]-[revision].ivy'
+		}
+	}
+}
