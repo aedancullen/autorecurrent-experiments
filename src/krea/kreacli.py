@@ -29,7 +29,7 @@ class KreaCLI:
 	def __init__(self):
 		self.parser = argparse.ArgumentParser(
 			prog = "krea",
-			description="Krea Recurrent-Evolving AGI\ngithub.com/aedancullen/krea"
+			description="Krea Recurrent-Evolving AGI - github.com/aedancullen/krea"
 		)
 		self.parser.add_argument("problemsdir", type=lambda x:isfile(parser,x))
 		self.parser.add_argument("programfile", type=lambda x:isdir(parser,x))
