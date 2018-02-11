@@ -2,9 +2,7 @@
 
 class KreaLog:
 
-	logtarget = None
-
-	def __init__(self, logtarget):
+	def __init__(self):
 
 		pass
 

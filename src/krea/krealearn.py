@@ -6,7 +6,7 @@ class KreaLearn:
 	program = None
 	log = None
 
-	score = -1
+	highscore = -1
 
 	def __init__(self, practice, program, log):
 		self.practice = practice
