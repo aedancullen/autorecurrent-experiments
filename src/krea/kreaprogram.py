@@ -47,6 +47,7 @@ class KreaProgram:
 			history_nrows = len(history)
 			scores_nrows = len(scores)
 			assert history_nrows == scores_nrows
+			nrows = history_nrows
 
 			history_unif = b''
 			for row in history:
@@ -62,7 +63,7 @@ class KreaProgram:
 
 			scores_datatype = c_double * len(scores_unif)
 
-			scores_arr = scores_datatype.from_buffer_copy(scores_unif)
+			scores_arr = scores_datatype(*scores_unif) # unpack list to pos. args
 			scores_pointer = pointer(scores_arr)
 
 
@@ -75,7 +76,7 @@ class KreaProgram:
 
 			self.krun(out_pointer, history_pointer, scores_pointer, nvals, nrows)
 
-			row_out = bytes(out_pointer.contents[:nvals])
+			row_out = bytes(out_buffer) # krun has modified the buffer in memory
 
 			running, score = practice_callback(row_out)
 			if not running: break
