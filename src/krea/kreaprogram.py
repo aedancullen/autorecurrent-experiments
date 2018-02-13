@@ -28,7 +28,7 @@ class KreaProgram:
 
 		krun_pointer = self.compiler.get_pointer_to_function(module.get_function("krea_run"))
 
-		krun_functype = CFUNCTYPE(POINTER(c_ubyte), POINTER(c_ubyte), c_uint64, c_uint64)
+		krun_functype = CFUNCTYPE(None, POINTER(c_char), POINTER(c_char), POINTER(c_double), c_uint64, c_uint64)
 
 		self.krun = krun_functype(krun_pointer)
 
@@ -38,30 +38,50 @@ class KreaProgram:
 		module = llvmbinding.parse_assembly(blah)
 		return module
 
-	def run(self, data, practice_callback):
+	def run(self, history, scores, practice_callback):
 
-		running = True
-		while running:
+		nvals = len(history[0])
 
-			data_unif = b''
-			for row in data:
-				data_unif += row
+		while True:
 
-			ubyte_arr_datatype = c_ubyte * len(data_unif)
+			history_nrows = len(history)
+			scores_nrows = len(scores)
+			assert history_nrows == scores_nrows
 
-			ubyte_arr = ubyte_arr_datatype.from_buffer_copy(data_unif)
-			ipointer = pointer(ubyte_arr)
+			history_unif = b''
+			for row in history:
+				history_unif += row
 
-			nvals = len(data[0])
-			nrows = len(data)
+			history_datatype = c_char * len(history_unif)
 
-			opointer = self.krun(ipointer, nvals, nrows)
+			history_arr = history_datatype.from_buffer_copy(data_unif)
+			history_pointer = pointer(history_arr)
 
-			row_out = bytes(opointer.contents[:nvals])
+			
+			scores_unif = scores
 
-			data.insert(0, row_out)
+			scores_datatype = c_double * len(scores_unif)
 
-			running = practice_callback(data)
+			scores_arr = scores_datatype.from_buffer_copy(scores_unif)
+			scores_pointer = pointer(scores_arr)
+
+
+			out_buffer = bytearray(nvals)
+			out_datatype = c_char * nvals
+
+			out_mutable = out_datatype.from_buffer(out_buffer)
+			out_pointer = pointer(out_mutable)
+
+
+			self.krun(out_pointer, history_pointer, scores_pointer, nvals, nrows)
+
+			row_out = bytes(out_pointer.contents[:nvals])
+
+			running, score = practice_callback(row_out)
+			if not running: break
+
+			history.insert(0, row_out)
+			scores.insert(0, score)
 
 
 	def from_file(program_fn):
