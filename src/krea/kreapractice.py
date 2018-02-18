@@ -1,4 +1,3 @@
-import kreaproblem
 
 
 class KreaPractice:

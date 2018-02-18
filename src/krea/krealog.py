@@ -7,5 +7,5 @@ class KreaLog:
 		pass
 
 
-	def results(self, program, score):
+	def run(self, program, score):
 		pass

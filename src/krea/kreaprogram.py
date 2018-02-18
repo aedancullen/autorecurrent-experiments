@@ -12,31 +12,54 @@ llvmbinding.initialize_native_asmprinter()
 
 class KreaProgram:
 
-	program = []
-
+	practice_functype = CFUNCTYPE(c_double, c_uint64)
+	krun_functype = CFUNCTYPE(c_uint64, POINTER(c_char), c_uint64, c_uint64, practice_functype)
 	compiler = None
 	krun = None
 
 	def __init__(self, program=[]):
-		self.program = program
 
 		llvmtarget = llvmbinding.Target.from_default_triple().create_target_machine()
-		module = self.bake()
+		module = self.bake(program)
 
 		self.compiler = llvmbinding.create_mcjit_compiler(module, llvmtarget)
 		self.compiler.finalize_object()
 
-		krun_pointer = self.compiler.get_pointer_to_function(module.get_function("krea_run"))
+		krun_pointer = self.compiler.get_pointer_to_function(module.get_function("krun"))
 
-		krun_functype = CFUNCTYPE(None, POINTER(c_char), POINTER(c_char), POINTER(c_double), c_uint64, c_uint64)
-
-		self.krun = krun_functype(krun_pointer)
+		self.krun = self.krun_functype(krun_pointer)
 
 
-	def bake(self):
+	def bake(self, program):
 
 		module = llvmbinding.parse_assembly(blah)
 		return module
+
+
+	def run2(self, data, practice_callback, memsize=1024):
+
+		datalen = len(data)
+		buffersize = datalen + memsize
+
+		membuffer = bytearray(buffersize)
+		data = bytes(data)
+		membuffer[:datalen] = data
+
+		def callback_wrapper(result_length):
+			dataout = bytes(membuffer[:result_length])
+			return callback(dataout)
+
+		membuffer_datatype = c_char * buffersize
+		membuffer_carray = membuffer_datatype.from_buffer_copy(membuffer)
+		membuffer_pointer = pointer(membuffer_carray)
+
+		practice_function = self.practice_functype(callback_wrapper)
+		result_length = self.krun(membuffer_pointer, c_uint64(buffersize), c_uint64(datalen), practice_function)
+
+		dataout = bytes(membuffer[:result_length])
+		return dataout
+
+
 
 	def run(self, history, scores, practice_callback):
 
@@ -94,6 +117,10 @@ class KreaProgram:
 
 
 	def from_data(data):
+		pass
+
+
+	def from_nothing():
 		pass
 
 
