@@ -12,8 +12,13 @@ llvmbinding.initialize_native_asmprinter()
 
 class KreaProgram:
 
-	practice_functype = CFUNCTYPE(c_double, c_uint64)
-	krun_functype = CFUNCTYPE(c_uint64, POINTER(c_char), c_uint64, c_uint64, practice_functype)
+	DATA_TYPE = c_int64
+	DATA_UBITS = 64
+
+	LENGTH_TYPE = c_uint64
+
+	practice_functype = CFUNCTYPE(DATA_TYPE, LENGTH_TYPE)
+	krun_functype = CFUNCTYPE(LENGTH_TYPE, POINTER(DATA_TYPE), LENGTH_TYPE, LENGTH_TYPE, practice_functype)
 	compiler = None
 	krun = None
 
@@ -47,14 +52,16 @@ class KreaProgram:
 
 		def callback_wrapper(result_length):
 			dataout = bytes(membuffer[:result_length])
-			return callback(dataout)
+			score_float = practice_callback(dataout)
+			score_data = score_float * (2 ** self.DATA_UBITS - 1)
+			return int(score_data)
 
-		membuffer_datatype = c_char * buffersize
+		membuffer_datatype = self.DATA_TYPE * buffersize
 		membuffer_carray = membuffer_datatype.from_buffer_copy(membuffer)
 		membuffer_pointer = pointer(membuffer_carray)
 
 		practice_function = self.practice_functype(callback_wrapper)
-		result_length = self.krun(membuffer_pointer, c_uint64(buffersize), c_uint64(datalen), practice_function)
+		result_length = self.krun(membuffer_pointer, buffersize, datalen, practice_function)
 
 		dataout = bytes(membuffer[:result_length])
 		return dataout
