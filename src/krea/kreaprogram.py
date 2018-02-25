@@ -12,8 +12,8 @@ llvmbinding.initialize_native_asmprinter()
 
 class KreaProgram:
 
-	DATA_TYPE = c_int64
-	DATA_UBITS = 64
+	DATA_TYPE = c_char
+	DATA_UBITS = 8
 
 	LENGTH_TYPE = c_uint64
 

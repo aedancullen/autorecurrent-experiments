@@ -10,6 +10,7 @@ class KreaLearn:
 	highscore = -1
 
 	latest_program = None
+	latest_score = None
 
 	def __init__(self, practice, program, log):
 		self.practice = practice
@@ -23,12 +24,15 @@ class KreaLearn:
 
 			program_out = kreaprogram.KreaProgram.from_data(programdata_out)
 			self.latest_program = program_out
-			score = self.practice.run(program_out)
-			self.log.run(program_out, score)
+			self.latest_score = self.practice.run(self.latest_program)
 
 			if score > highscore:
-				self.highscore = score
+				self.highscore = self.latest_score
+				self.program = self.latest_program
+				self.log.log_improved(self.latest_program, self.latest_score)
 				raise ScoreImproved()
+			else:
+				self.log.log_main(self.latest_program, self.latest_score)
 
 			return score
 		
@@ -39,7 +43,6 @@ class KreaLearn:
 				programdata_out = self.program.run(programdata, practice_callback)
 				practice_callback(programdata_out)
 			except ScoreImproved:
-				self.program = self.latest_program
 				continue
-
+				
 			return
