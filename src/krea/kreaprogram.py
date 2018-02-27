@@ -12,6 +12,8 @@ llvmbinding.initialize_native_asmprinter()
 
 class KreaProgram:
 
+	program = None
+
 	DATA_TYPE = c_char
 	DATA_UBITS = 8
 
@@ -22,23 +24,25 @@ class KreaProgram:
 	compiler = None
 	krun = None
 
-	def __init__(self, program=[]):
+	def __init__(self, program):
+
+		self.program = program
+
+		self.bake()
+
+
+	def bake(self):
+
+		module = llvmbinding.parse_assembly(blah)
 
 		llvmtarget = llvmbinding.Target.from_default_triple().create_target_machine()
-		module = self.bake(program)
-
+		
 		self.compiler = llvmbinding.create_mcjit_compiler(module, llvmtarget)
 		self.compiler.finalize_object()
 
 		krun_pointer = self.compiler.get_pointer_to_function(module.get_function("krun"))
 
 		self.krun = self.krun_functype(krun_pointer)
-
-
-	def bake(self, program):
-
-		module = llvmbinding.parse_assembly(blah)
-		return module
 
 
 	def run2(self, data, practice_callback, memsize=1024):
@@ -116,11 +120,17 @@ class KreaProgram:
 
 
 	def from_file(program_fn):
-		pass
+
+		with open(program_fn, "r") as file:
+
+			return KreaProgram(file.read())
 
 
 	def to_file(self, program_fn):
-		pass
+
+		with open(program_fn, "w") as file:
+
+			file.write(self.program.encode())
 
 
 	def from_data(data):

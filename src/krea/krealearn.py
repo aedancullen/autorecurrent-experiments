@@ -20,6 +20,9 @@ class KreaLearn:
 
 	def run(self):
 
+		self.highscore = self.practice.run(self.program)
+		self.log.log_main(self.highscore, self.highscore, self.program)
+
 		def practice_callback(programdata_out):
 
 			program_out = kreaprogram.KreaProgram.from_data(programdata_out)
