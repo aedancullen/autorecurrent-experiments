@@ -45,7 +45,7 @@ class KreaProgram:
 		self.krun = self.krun_functype(krun_pointer)
 
 
-	def run2(self, data, practice_callback, memsize=1024):
+	def run(self, data, practice_callback, memsize=1024):
 
 		datalen = len(data)
 		buffersize = 1 + datalen + memsize
@@ -75,53 +75,6 @@ class KreaProgram:
 
 		return dataout
 
-
-
-	def run(self, history, scores, practice_callback):
-
-		nvals = len(history[0])
-
-		while True:
-
-			history_nrows = len(history)
-			scores_nrows = len(scores)
-			assert history_nrows == scores_nrows
-			nrows = history_nrows
-
-			history_unif = b''
-			for row in history:
-				history_unif += row
-
-			history_datatype = c_char * len(history_unif)
-
-			history_arr = history_datatype.from_buffer_copy(data_unif)
-			history_pointer = pointer(history_arr)
-
-			
-			scores_unif = scores
-
-			scores_datatype = c_double * len(scores_unif)
-
-			scores_arr = scores_datatype(*scores_unif) # unpack list to pos. args
-			scores_pointer = pointer(scores_arr)
-
-
-			out_buffer = bytearray(nvals)
-			out_datatype = c_char * nvals
-
-			out_mutable = out_datatype.from_buffer(out_buffer)
-			out_pointer = pointer(out_mutable)
-
-
-			self.krun(out_pointer, history_pointer, scores_pointer, nvals, nrows)
-
-			row_out = bytes(out_buffer) # krun has modified the buffer in memory
-
-			running, score = practice_callback(row_out)
-			if not running: break
-
-			history.insert(0, row_out)
-			scores.insert(0, score)
 
 
 	def from_file(program_fn):
