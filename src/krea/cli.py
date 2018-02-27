@@ -34,19 +34,23 @@ class KreaCLI:
 			prog = "krea",
 			description="Krea Recurrent-Evolving AGI - github.com/aedancullen/krea"
 		)
-		self.parser.add_argument("problemsdir", type=lambda x:isfile(parser,x))
-		self.parser.add_argument("programfile", type=lambda x:isdir(parser,x))
+		self.parser.add_argument("problemsdir", type=lambda x:isdir(parser,x))
+		self.parser.add_argument("programsdir", type=lambda x:isdir(parser,x))
+		self.parser.add_argument("programfile", type=lambda x:isfile(parser,x))
 
 
 	def run(self) :
 		args = self.parser.parse_args()
-		problems_fn = args.problemsdir
-		program_fn = args.programfile
-		self.run_krealearn(self, problems_fn, program_fn)
+		problems_dir = args.problemsdir + "/"
+		programs_dir = args.programsdir
+		programs_prefix = os.path.basename(os.path.dirname(problems_dir))
+		program_file = args.programfile
+		self.run_krealearn(self, problems_dir, programs_dir, programs_prefix, program_file)
 
-	def run_krealearn(self, problems_fn, program_fn):
-		practice = practice.KreaPractice(problems_fn)
+	def run_krealearn(self, problems_dir, programs_dir, programs_prefix, program_fn):
+
+		practice = practice.KreaPractice(problems_dir)
 		program = program.KreaProgram.from_file(program_fn)
-		log = log.KreaLog()
+		log = log.KreaLog(programs_dir, programs_prefix)
 		learner = learn.KreaLearn(practice, program, log)
 		learner.run()
