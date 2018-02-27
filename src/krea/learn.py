@@ -1,4 +1,4 @@
-from krea import kreaprogram
+from krea import program
 
 
 class KreaLearn:
@@ -25,7 +25,7 @@ class KreaLearn:
 
 		def practice_callback(programdata_out):
 
-			program_out = kreaprogram.KreaProgram.from_data(programdata_out)
+			program_out = program.KreaProgram.from_data(programdata_out)
 			self.latest_program = program_out
 			self.latest_score = self.practice.run(self.latest_program)
 

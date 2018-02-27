@@ -1,7 +1,7 @@
-from krea import krealearn
-from krea import kreapractice
-from krea import kreaprogram
-from krea import krealog
+from krea import learn
+from krea import practice
+from krea import program
+from krea import log
 import argparse
 import os
 
@@ -45,8 +45,8 @@ class KreaCLI:
 		self.run_krealearn(self, problems_fn, program_fn)
 
 	def run_krealearn(self, problems_fn, program_fn):
-		practice = kreapractice.KreaPractice(problems_fn)
-		program = kreaprogram.KreaProgram.from_file(program_fn)
-		log = krealog.KreaLog()
-		learner = krealearn.KreaLearn(practice, program, log)
+		practice = practice.KreaPractice(problems_fn)
+		program = program.KreaProgram.from_file(program_fn)
+		log = log.KreaLog()
+		learner = learn.KreaLearn(practice, program, log)
 		learner.run()
