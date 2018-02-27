@@ -145,7 +145,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'krea = krea.kreacli:start_cli',
+            'krea = krea.cli:start_cli',
         ],
     }
 )
