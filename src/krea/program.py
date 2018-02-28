@@ -19,7 +19,7 @@ class KreaProgram:
 
 	LENGTH_TYPE = c_uint64
 
-	practice_functype = CFUNCTYPE(None)
+	practice_functype = CFUNCTYPE(DATA_TYPE)
 	krun_functype = CFUNCTYPE(None, POINTER(DATA_TYPE), LENGTH_TYPE, practice_functype)
 	compiler = None
 	krun = None
