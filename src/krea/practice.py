@@ -13,6 +13,9 @@ class KreaPractice:
 
 	def run(self, program):
 
+		tasklist = [(inset, outset, program) for inset, outset in problems]
+		iterator = iter(tasklist)
+
 		def pfunc(args):
 			program, inset, outset = args
 
@@ -53,7 +56,7 @@ class KreaPractice:
 			return highest_score
 
 		
-		parallel_iterator = pool.imap_unordered(func, iterator)
+		parallel_iterator = pool.imap_unordered(pfunc, iterator)
 
 		results_list = list(parallel_iterator)
 
