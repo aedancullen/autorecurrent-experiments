@@ -7,7 +7,7 @@ class KreaLearn:
 	program = None
 	log = None
 
-	highscore = -1
+	highscore = 0
 
 	latest_program = None
 	latest_score = None

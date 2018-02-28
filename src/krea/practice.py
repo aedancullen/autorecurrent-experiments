@@ -16,15 +16,27 @@ class KreaPractice:
 		def pfunc(args):
 			program, inset, outset = args
 
-			highest_score = -1
+			highest_score = 0
 
 			def test_callback(programdata_out):
 				program_out = program.KreaProgram.from_data(programdata_out)
 
 				attempted_outset = []
 				for item in inset:
-					res = program_out.run(item)
-					attempted_outset.append(res)
+
+					latest_result = None
+
+					def score_individual(data_out):
+						latest_result = data_out
+						target_data = outset[inset.find(item)]
+						return TODO scoring
+
+					try:
+						latest_result = program_out.run(item, score_individual)
+					except program.ProgramUnresponsive:
+						pass
+
+					attempted_outset.append(latest_result)
 
 				score = TODO scoring
 				if score > highest_score:
@@ -32,8 +44,13 @@ class KreaPractice:
 
 				return score
 
-			executable = program.run(program.KreaProgram.from_nothing(), test_callback)
-			test_callback(executable)
+			try:
+				executable = program.run(program.KreaProgram.from_nothing(), test_callback)
+				test_callback(executable)
+			except program.ProgramUnresponsive:
+				pass
+
+			return highest_score
 
 		
 		parallel_iterator = pool.imap_unordered(func, iterator)
