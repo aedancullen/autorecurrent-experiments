@@ -52,10 +52,10 @@ class KreaProgram:
 		self.krun = self.krun_functype(krun_pointer)
 
 
-	def run(self, data, practice_callback, memsize=1024):
+	def run(self, data, practice_callback, buffersize=1024):
 
 		datalen = len(data)
-		buffersize = 1 + datalen + memsize
+		assert buffersize > datalen + 1
 
 		membuffer = bytearray(buffersize)
 		membuffer[0] = datalen

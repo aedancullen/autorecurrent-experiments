@@ -27,7 +27,7 @@ class KreaPractice:
 				attempted_outset = []
 				for item in inset:
 
-					latest_result = None
+					latest_result = item # simple init if no iters succeed w/o ProgramUnresponsive
 
 					def score_individual(data_out):
 						latest_result = data_out
