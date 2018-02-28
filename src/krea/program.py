@@ -35,12 +35,19 @@ class KreaProgram:
 
 		module = llvmbinding.parse_assembly(blah)
 
+		#optimizer = llvmbinding.create_pass_manager_builder()
+    	#optimizer.opt_level = 3
+    	#optimizer.size_level = 0
+    	#passman = llvm.create_module_pass_manager()
+    	#optimizer.populate(passman)
+    	#passman.run(module)
+
 		llvmtarget = llvmbinding.Target.from_default_triple().create_target_machine()
 		
 		self.compiler = llvmbinding.create_mcjit_compiler(module, llvmtarget)
 		self.compiler.finalize_object()
 
-		krun_pointer = self.compiler.get_pointer_to_function(module.get_function("krun"))
+		krun_pointer = self.compiler.get_function_address("krun")
 
 		self.krun = self.krun_functype(krun_pointer)
 
