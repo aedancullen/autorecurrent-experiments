@@ -99,7 +99,8 @@ class KreaProgram:
 
 
 	def from_data(data):
-		pass
+		
+		return KreaProgram(data)
 
 
 	def from_nothing():
@@ -107,4 +108,5 @@ class KreaProgram:
 
 
 	def to_data(self):
-		pass
+		
+		return self.program
