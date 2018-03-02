@@ -86,16 +86,16 @@ class KreaProgram:
 
 	def from_file(program_fn):
 
-		with open(program_fn, "r") as file:
+		with open(program_fn, "rb") as file:
 
 			return KreaProgram(file.read())
 
 
 	def to_file(self, program_fn):
 
-		with open(program_fn, "w") as file:
+		with open(program_fn, "wb") as file:
 
-			file.write(self.program.encode())
+			file.write(self.program)
 
 
 	def from_data(data):

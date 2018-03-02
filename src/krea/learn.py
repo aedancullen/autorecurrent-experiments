@@ -29,7 +29,7 @@ class KreaLearn:
 			self.latest_program = program_out
 			self.latest_score = self.practice.run(self.latest_program)
 
-			self.log.log_main(self.highscore, self.latest_score, self.latest_program)
+			self.log.log_learn(self.highscore, self.latest_score, self.latest_program)
 
 			if score > highscore:
 				self.highscore = self.latest_score

@@ -41,16 +41,19 @@ class KreaCLI:
 
 	def run(self) :
 		args = self.parser.parse_args()
-		problems_dir = args.problems_directory + "/"
-		programs_dir = args.programs_directory
-		programs_prefix = os.path.basename(os.path.dirname(problems_dir))
-		program_file = args.initial_program_file
-		self.run_krealearn(self, problems_dir, programs_dir, programs_prefix, program_file)
+		practice_file = args.practice_file
+		program_file = args.program_file
+		output_directory = args.output_directory
+		practice_file_basename = os.path.basename(practice_file)
+		output_prefix = practice_file_basename[:practice_file_basename.rfind('.')]
+		self.run_krealearn(self, practice_file, program_file, output_directory, output_prefix)
 
-	def run_krealearn(self, problems_dir, programs_dir, programs_prefix, program_fn):
+	def run_krealearn(self, practice_file, program_file, output_directory, output_prefix):
 
-		practice = practice.KreaPractice(problems_dir)
-		program = program.KreaProgram.from_file(program_fn)
-		log = log.KreaLog(programs_dir, programs_prefix)
+		log = log.KreaLog(output_directory, output_prefix)
+		log.log_initinfo(practice_file, program_file, output_directory, output_prefix)
+
+		practice = practice.KreaPractice(practice_file, log)
+		program = program.KreaProgram.from_file(program_file)
 		learner = learn.KreaLearn(practice, program, log)
 		learner.run()

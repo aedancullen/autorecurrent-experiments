@@ -7,9 +7,16 @@ class KreaPractice:
 
 	pool = None
 
-	def __init__(self, problems_dir):
+	log = None
+
+	def __init__(self, practice_file, log):
 		
 		pool = multiprocessing.Pool()
+
+		self.log = log
+
+		with open(practice_file, "rb") as file:
+			problems = pickle.load(file)
 
 	def run(self, program):
 
