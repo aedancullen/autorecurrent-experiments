@@ -30,4 +30,4 @@ class KreaLog:
 
 			logging.info("lv:log\tWrote {}".format(name))
 
-	def log_practice(self, )
+	#def log_practice(self, )

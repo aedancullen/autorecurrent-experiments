@@ -39,7 +39,7 @@ class KreaPractice:
 					def score_individual(data_out):
 						latest_result = data_out
 						target_data = outset[inset.find(item)]
-						return TODO scoring
+						return 0#TODO scoring
 
 					try:
 						latest_result = program_out.run(item, score_individual)
@@ -48,7 +48,7 @@ class KreaPractice:
 
 					attempted_outset.append(latest_result)
 
-				score = TODO scoring
+				score = 0#TODO scoring
 				if score > highest_score:
 					highest_score = score
 

@@ -34,12 +34,12 @@ class KreaCLI:
 			prog = "krea",
 			description="Krea Recurrent-Evolving AGI - github.com/aedancullen/krea"
 		)
-		self.parser.add_argument("practice_file", type=lambda x:isfile(parser,x))
-		self.parser.add_argument("program_file", type=lambda x:isfile(parser,x))
-		self.parser.add_argument("output_directory", type=lambda x:isdir(parser,x))
+		self.parser.add_argument("practice_file", type=lambda x:isfile(self.parser,x))
+		self.parser.add_argument("program_file", type=lambda x:isfile(self.parser,x))
+		self.parser.add_argument("output_directory", type=lambda x:isdir(self.parser,x))
 
 
-	def run(self) :
+	def run(self):
 		args = self.parser.parse_args()
 		practice_file = args.practice_file
 		program_file = args.program_file
