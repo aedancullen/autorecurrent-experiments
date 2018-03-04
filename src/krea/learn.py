@@ -31,13 +31,13 @@ class KreaLearn:
 
 			self.log.log_learn(self.highscore, self.latest_score, self.latest_program)
 
-			if score > highscore:
+			if score < highscore:
 				self.highscore = self.latest_score
 				self.program = self.latest_program
 
 				raise ScoreImproved()
 
-			return score / highscore
+			return score - highscore
 		
 
 		while True:
