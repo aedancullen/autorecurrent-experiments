@@ -1,5 +1,7 @@
 from krea import program
 
+class ScoreImproved(Exception):
+    pass
 
 class KreaLearn:
 

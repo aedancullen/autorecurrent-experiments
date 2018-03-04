@@ -71,7 +71,10 @@ class KreaPractice:
 
 					attempted_outset.append(latest_result)
 
-				score = self.score(attempted_outset, outset)
+				#score = self.score(attempted_outset, outset)
+
+				self.log.log_practice(best_score, score)
+
 				if score < best_score:
 					best_score = score
 
@@ -89,6 +92,7 @@ class KreaPractice:
 		parallel_iterator = pool.imap_unordered(pfunc, iterator)
 
 		results_list = list(parallel_iterator)
+		return sum(results_list) / len(results_list)
 
 		
 

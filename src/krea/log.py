@@ -30,4 +30,6 @@ class KreaLog:
 
 			logging.info("lv:log\tWrote {}".format(name))
 
-	#def log_practice(self, )
+	def log_practice(self, best_score, current_score, relevant_program):
+
+		logging.info("lv:practice\tbs:{}\tcs:{}".formate(best_score, current_score))

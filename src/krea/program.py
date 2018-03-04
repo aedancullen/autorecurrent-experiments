@@ -1,6 +1,7 @@
 from llvmlite import ir as llvmir
 from llvmlite import binding as llvmbinding
 from ctypes import *
+import signal
 
 # llvm init
 llvmbinding.initialize()
@@ -8,7 +9,8 @@ llvmbinding.initialize_native_target()
 llvmbinding.initialize_native_asmprinter()
 
 
-
+class ProgramUnresponsive(Exception):
+    pass
 
 class KreaProgram:
 
@@ -54,6 +56,9 @@ class KreaProgram:
 
 	def run(self, data, practice_callback, buffersize=1024):
 
+		def unresponsive_handler(signum, frame):
+			raise ProgramUnresponsive()
+
 		datalen = len(data)
 		assert buffersize > datalen + 1
 
@@ -75,7 +80,12 @@ class KreaProgram:
 
 		practice_function = self.practice_functype(callback_wrapper)
 
+		signal.signal(signal.SIGALRM, unresponsive_handler) # only on unix
+		signal.alarm(5)
+
 		self.krun(membuffer_pointer, buffersize, practice_function)
+
+		signal.alarm(0)
 
 		result_length = membuffer[0]
 		dataout = membuffer[1:1+result_length]
