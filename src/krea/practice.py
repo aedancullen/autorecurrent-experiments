@@ -71,9 +71,9 @@ class KreaPractice:
 
 					attempted_outset.append(latest_result)
 
-				#score = self.score(attempted_outset, outset)
+				score = self.score(attempted_outset, outset)
 
-				self.log.log_practice(best_score, score)
+				#self.log.log_practice(best_score, score)
 
 				if score < best_score:
 					best_score = score

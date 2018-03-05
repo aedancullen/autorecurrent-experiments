@@ -20,6 +20,7 @@ class KreaProgram:
 	DATA_UBITS = 8
 
 	LENGTH_TYPE = c_uint64
+	LENGTH_UBITS = 64
 
 	practice_functype = CFUNCTYPE(DATA_TYPE)
 	krun_functype = CFUNCTYPE(None, POINTER(DATA_TYPE), LENGTH_TYPE, practice_functype)
@@ -33,9 +34,33 @@ class KreaProgram:
 		self.bake()
 
 
+	def irbuild(self):
+		# self.program in, ir_module out
+
+		cell_t = ir.IntType(DATA_UBITS)
+		length_t = ir.IntType(LENGTH_UBITS)
+
+		ir_module = llvmir.Module()
+
+		callback_func_t = llvmir.FunctionType(length_t, ())
+
+		krun_func_t = llvmir.FunctionType(llvmir.VoidType(), (cell_t.as_pointer(), length_t, callback_func_t.as_pointer()))
+		krun_func = llvmir.Function(module, krun_func_t, "krun")
+		krun_entry = krun_func.append_basic_block('entry')
+		krun_builder = llvmir.IRBuilder(krun_entry)
+
+		ptr, length, callback = krun_func.args
+
+		zero = cell_t(0)
+		one = cell_t(1)
+		minus_one = cell_t(-1)
+
+
 	def bake(self):
 
-		module = llvmbinding.parse_assembly(blah)
+		ir_module = self.irbuild()
+
+		llvm_module = llvmbinding.parse_assembly(str(ir_module))
 
 		#optimizer = llvmbinding.create_pass_manager_builder()
     	#optimizer.opt_level = 3
@@ -46,7 +71,7 @@ class KreaProgram:
 
 		llvmtarget = llvmbinding.Target.from_default_triple().create_target_machine()
 		
-		self.compiler = llvmbinding.create_mcjit_compiler(module, llvmtarget)
+		self.compiler = llvmbinding.create_mcjit_compiler(llvm_module, llvmtarget)
 		self.compiler.finalize_object()
 
 		krun_pointer = self.compiler.get_function_address("krun")
