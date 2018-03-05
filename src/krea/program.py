@@ -16,11 +16,11 @@ class KreaProgram:
 
 	program = None
 
-	DATA_TYPE = c_char
-	DATA_UBITS = 8
+	DATA_TYPE = c_int
+	DATA_UBITS = 32
 
-	LENGTH_TYPE = c_uint64
-	LENGTH_UBITS = 64
+	LENGTH_TYPE = c_int
+	LENGTH_UBITS = 32
 
 	practice_functype = CFUNCTYPE(DATA_TYPE)
 	krun_functype = CFUNCTYPE(None, POINTER(DATA_TYPE), LENGTH_TYPE, practice_functype)
@@ -45,8 +45,8 @@ class KreaProgram:
 		callback_func_t = llvmir.FunctionType(length_t, ())
 
 		krun_func_t = llvmir.FunctionType(llvmir.VoidType(), (cell_t.as_pointer(), length_t, callback_func_t.as_pointer()))
-		krun_func = llvmir.Function(module, krun_func_t, "krun")
-		krun_entry = krun_func.append_basic_block('entry')
+		krun_func = llvmir.Function(ir_module, krun_func_t, "krun")
+		krun_entry = krun_func.append_basic_block("entry")
 		krun_builder = llvmir.IRBuilder(krun_entry)
 
 		ptr, length, callback = krun_func.args
@@ -54,6 +54,80 @@ class KreaProgram:
 		zero = cell_t(0)
 		one = cell_t(1)
 		minus_one = cell_t(-1)
+
+		rand_t = ir.FunctionType(cell_t, [])
+		rand = ir.Function(ir_module, rand_t, "rand")
+
+		stack = []
+		class Loop:
+    		pass
+
+        for instr in program:
+
+            if instr == b'\x01':
+                ptr = krun_builder.gep(ptr, [one])
+            elif instr == b'\x02':
+                ptr = krun_builder.gep(ptr, [minus_one])
+            elif instr == b'\x03':
+                value = krun_builder.load(ptr)
+                value = krun_builder.add(value, one)
+                krun_builder.store(value, ptr)
+            elif instr == b'\x04':
+                value = krun_builder.load(ptr)
+                value = krun_builder.sub(value, one)
+                krun_builder.store(value, ptr)
+
+            elif instr == b'\x05':
+                loop = Loop()
+                loop.entry = krun_builder.block
+                loop.body = krun_builder.append_basic_block()
+                loop.exit = krun_builder.append_basic_block()
+
+                value = krun_builder.load(ptr)
+                cond = krun_builder.icmp_unsigned("!=",value,zero)
+                krun_builder.cbranch(cond, loop.body, loop.exit)
+
+                with krun_builder.goto_block(loop.exit):
+                    loop.ptr_exit = krun_builder.phi(pcell_t)
+                    loop.ptr_exit.add_incoming(ptr, loop.entry)
+
+                with krun_builder.goto_block(loop.body):
+                    loop.ptr_body = krun_builder.phi(pcell_t)
+                    loop.ptr_body.add_incoming(ptr, loop.entry)
+
+                krun_builder.position_at_end(loop.body)
+                ptr = loop.ptr_body
+                stack.append(loop)
+
+            elif instr == b'\x06':
+                if len(stack) == 0:
+                    continue
+
+                loop = stack.pop()
+
+                loop.ptr_body.add_incoming(ptr, krun_builder.block)
+                loop.ptr_exit.add_incoming(ptr, krun_builder.block)
+
+                value = krun_builder.load(ptr)
+                cond = krun_builder.icmp_unsigned("!=",value, zero)
+                krun_builder.cbranch(cond, loop.body, loop.exit)
+
+                ptr = loop.ptr_exit
+                krun_builder.position_at_end(loop.exit)
+
+            elif instr == b'\x07':
+                value = krun_builder.call(callback, ())
+                value = krun_builder.trunc(value, cell_t)
+                krun_builder.store(value, ptr)
+
+            elif instr == b'\x08':
+                value = krun_builder.call(rand, ())
+                value = krun_builder.trunc(value, cell_t)
+                krun_builder.store(value, ptr)
+
+
+        return ir_module
+
 
 
 	def bake(self):
@@ -95,9 +169,8 @@ class KreaProgram:
 			result_length = membuffer[0]
 
 			dataout = membuffer[1:1+result_length]
-			score_float = practice_callback(dataout)
-			score_data = score_float * (2 ** self.DATA_UBITS - 1)
-			return int(score_data)
+			score = practice_callback(dataout)
+			return int(score)
 
 		membuffer_datatype = self.DATA_TYPE * buffersize
 		membuffer_carray = membuffer_datatype.from_buffer(membuffer) # allows mutation of membuffer in-place
