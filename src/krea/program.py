@@ -166,9 +166,9 @@ class KreaProgram:
 		membuffer[1:1+datalen] = data
 
 		def callback_wrapper():
-			result_length = membuffer[0]
-
+			result_length = max(membuffer[0], len(membuffer) - 1)
 			dataout = membuffer[1:1+result_length]
+
 			score = practice_callback(dataout)
 			return int(score)
 
@@ -185,7 +185,7 @@ class KreaProgram:
 
 		signal.alarm(0)
 
-		result_length = membuffer[0]
+		result_length = max(membuffer[0], len(membuffer) - 1)
 		dataout = membuffer[1:1+result_length]
 
 		return dataout
@@ -212,7 +212,7 @@ class KreaProgram:
 
 
 	def from_nothing():
-		pass
+		return KreaProgram(b'')
 
 
 	def to_data(self):
