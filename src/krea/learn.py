@@ -39,7 +39,7 @@ class KreaLearn:
 
 				raise ScoreImproved()
 
-			return score - highscore
+			return score
 		
 
 		while True:
