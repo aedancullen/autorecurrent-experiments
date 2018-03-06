@@ -156,7 +156,7 @@ class KreaProgram:
 		self.krun = self.krun_functype(krun_pointer)
 
 
-	def run(self, data, practice_callback):
+	def run(self, data, practice_callback, max_practice_score = 255 ** 2):
 
 		def unresponsive_handler(signum, frame):
 			raise ProgramUnresponsive()
@@ -180,7 +180,7 @@ class KreaProgram:
 			dataout = membuffer[start:end:step]
 
 			score = practice_callback(dataout)
-			score *= (2 ** self.DATA_UBITS - 1) / 255 ** 2
+			score *= (2 ** self.DATA_UBITS - 1) / max_practice_score
 			return int(score)
 
 		membuffer_datatype = self.DATA_TYPE * self.BUFFERSIZE
