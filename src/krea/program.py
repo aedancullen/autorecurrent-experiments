@@ -156,7 +156,7 @@ class KreaProgram:
 		self.krun = self.krun_functype(krun_pointer)
 
 
-	def run(self, data, practice_callback, max_practice_score = 255 ** 2):
+	def run(self, data, practice_callback, max_practice_score = 255 ** 2, alarm_set_secs = 5):
 
 		def unresponsive_handler(signum, frame):
 			raise ProgramUnresponsive()
@@ -172,6 +172,9 @@ class KreaProgram:
 		membuffer[start:end:step] = data
 
 		def callback_wrapper():
+			signal.alarm(0)
+			signal.alarm(alarm_set_secs)
+			
 			len_ind = struct.unpack('I', membuffer[:self.N_BYTESPER])[0]
 			result_length = min(len_ind, self.BUFFERSIZE - 1)
 			start = self.N_BYTESPER
@@ -190,7 +193,7 @@ class KreaProgram:
 		practice_function = self.practice_functype(callback_wrapper)
 
 		signal.signal(signal.SIGALRM, unresponsive_handler) # only on unix
-		signal.alarm(5)
+		signal.alarm(alarm_set_secs)
 
 		self.krun(membuffer_pointer, practice_function)
 
