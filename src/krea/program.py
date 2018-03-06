@@ -2,6 +2,7 @@ from llvmlite import ir as llvmir
 from llvmlite import binding as llvmbinding
 from ctypes import *
 import signal
+import struct
 
 # llvm init
 llvmbinding.initialize()
@@ -10,7 +11,7 @@ llvmbinding.initialize_native_asmprinter()
 
 
 class ProgramUnresponsive(Exception):
-    pass
+	pass
 
 class KreaProgram:
 
@@ -22,8 +23,12 @@ class KreaProgram:
 	LENGTH_TYPE = c_int
 	LENGTH_UBITS = 32
 
+	BUFFERSIZE = 1024
+
+	N_BYTESPER = DATA_UBITS // 8
+
 	practice_functype = CFUNCTYPE(DATA_TYPE)
-	krun_functype = CFUNCTYPE(None, POINTER(DATA_TYPE), LENGTH_TYPE, practice_functype)
+	krun_functype = CFUNCTYPE(None, POINTER(DATA_TYPE * BUFFERSIZE), LENGTH_TYPE, practice_functype)
 	compiler = None
 	krun = None
 
@@ -37,8 +42,8 @@ class KreaProgram:
 	def irbuild(self):
 		# self.program in, ir_module out
 
-		cell_t = ir.IntType(DATA_UBITS)
-		length_t = ir.IntType(LENGTH_UBITS)
+		cell_t = llvmir.IntType(self.DATA_UBITS)
+		length_t = llvmir.IntType(self.LENGTH_UBITS)
 
 		ir_module = llvmir.Module()
 
@@ -55,78 +60,79 @@ class KreaProgram:
 		one = cell_t(1)
 		minus_one = cell_t(-1)
 
-		rand_t = ir.FunctionType(cell_t, [])
-		rand = ir.Function(ir_module, rand_t, "rand")
+		rand_t = llvmir.FunctionType(cell_t, [])
+		rand = llvmir.Function(ir_module, rand_t, "rand")
 
 		stack = []
 		class Loop:
-    		pass
+			pass
 
-        for instr in program:
+		for instr in self.program:
 
-            if instr == b'\x01':
-                ptr = krun_builder.gep(ptr, [one])
-            elif instr == b'\x02':
-                ptr = krun_builder.gep(ptr, [minus_one])
-            elif instr == b'\x03':
-                value = krun_builder.load(ptr)
-                value = krun_builder.add(value, one)
-                krun_builder.store(value, ptr)
-            elif instr == b'\x04':
-                value = krun_builder.load(ptr)
-                value = krun_builder.sub(value, one)
-                krun_builder.store(value, ptr)
+			if instr == b'\x01':
+				ptr = krun_builder.gep(ptr, [one])
+			elif instr == b'\x02':
+				ptr = krun_builder.gep(ptr, [minus_one])
+			elif instr == b'\x03':
+				value = krun_builder.load(ptr)
+				value = krun_builder.add(value, one)
+				krun_builder.store(value, ptr)
+			elif instr == b'\x04':
+				value = krun_builder.load(ptr)
+				value = krun_builder.sub(value, one)
+				krun_builder.store(value, ptr)
 
-            elif instr == b'\x05':
-                loop = Loop()
-                loop.entry = krun_builder.block
-                loop.body = krun_builder.append_basic_block()
-                loop.exit = krun_builder.append_basic_block()
+			elif instr == b'\x05':
+				loop = Loop()
+				loop.entry = krun_builder.block
+				loop.body = krun_builder.append_basic_block()
+				loop.exit = krun_builder.append_basic_block()
 
-                value = krun_builder.load(ptr)
-                cond = krun_builder.icmp_unsigned("!=",value,zero)
-                krun_builder.cbranch(cond, loop.body, loop.exit)
+				value = krun_builder.load(ptr)
+				cond = krun_builder.icmp_unsigned("!=", value, zero)
+				krun_builder.cbranch(cond, loop.body, loop.exit)
 
-                with krun_builder.goto_block(loop.exit):
-                    loop.ptr_exit = krun_builder.phi(pcell_t)
-                    loop.ptr_exit.add_incoming(ptr, loop.entry)
+				with krun_builder.goto_block(loop.exit):
+					loop.ptr_exit = krun_builder.phi(pcell_t)
+					loop.ptr_exit.add_incoming(ptr, loop.entry)
 
-                with krun_builder.goto_block(loop.body):
-                    loop.ptr_body = krun_builder.phi(pcell_t)
-                    loop.ptr_body.add_incoming(ptr, loop.entry)
+				with krun_builder.goto_block(loop.body):
+					loop.ptr_body = krun_builder.phi(pcell_t)
+					loop.ptr_body.add_incoming(ptr, loop.entry)
 
-                krun_builder.position_at_end(loop.body)
-                ptr = loop.ptr_body
-                stack.append(loop)
+				krun_builder.position_at_end(loop.body)
+				ptr = loop.ptr_body
+				stack.append(loop)
 
-            elif instr == b'\x06':
-                if len(stack) == 0:
-                    continue
+			elif instr == b'\x06':
+				if len(stack) == 0:
+					continue
 
-                loop = stack.pop()
+				loop = stack.pop()
 
-                loop.ptr_body.add_incoming(ptr, krun_builder.block)
-                loop.ptr_exit.add_incoming(ptr, krun_builder.block)
+				loop.ptr_body.add_incoming(ptr, krun_builder.block)
+				loop.ptr_exit.add_incoming(ptr, krun_builder.block)
 
-                value = krun_builder.load(ptr)
-                cond = krun_builder.icmp_unsigned("!=",value, zero)
-                krun_builder.cbranch(cond, loop.body, loop.exit)
+				value = krun_builder.load(ptr)
+				cond = krun_builder.icmp_unsigned("!=", value, zero)
+				krun_builder.cbranch(cond, loop.body, loop.exit)
 
-                ptr = loop.ptr_exit
-                krun_builder.position_at_end(loop.exit)
+				ptr = loop.ptr_exit
+				krun_builder.position_at_end(loop.exit)
 
-            elif instr == b'\x07':
-                value = krun_builder.call(callback, ())
-                value = krun_builder.trunc(value, cell_t)
-                krun_builder.store(value, ptr)
+			elif instr == b'\x07':
+				value = krun_builder.call(callback, ())
+				value = krun_builder.trunc(value, cell_t)
+				krun_builder.store(value, ptr)
 
-            elif instr == b'\x08':
-                value = krun_builder.call(rand, ())
-                value = krun_builder.trunc(value, cell_t)
-                krun_builder.store(value, ptr)
+			elif instr == b'\x08':
+				value = krun_builder.call(rand, ())
+				value = krun_builder.trunc(value, cell_t)
+				krun_builder.store(value, ptr)
 
 
-        return ir_module
+		krun_builder.ret_void()
+		return ir_module
 
 
 
@@ -137,11 +143,11 @@ class KreaProgram:
 		llvm_module = llvmbinding.parse_assembly(str(ir_module))
 
 		#optimizer = llvmbinding.create_pass_manager_builder()
-    	#optimizer.opt_level = 3
-    	#optimizer.size_level = 0
-    	#passman = llvm.create_module_pass_manager()
-    	#optimizer.populate(passman)
-    	#passman.run(module)
+		#optimizer.opt_level = 3
+		#optimizer.size_level = 0
+		#passman = llvm.create_module_pass_manager()
+		#optimizer.populate(passman)
+		#passman.run(module)
 
 		llvmtarget = llvmbinding.Target.from_default_triple().create_target_machine()
 		
@@ -159,20 +165,27 @@ class KreaProgram:
 			raise ProgramUnresponsive()
 
 		datalen = len(data)
-		assert buffersize > datalen + 1
 
-		membuffer = bytearray(buffersize)
-		membuffer[0] = datalen
-		membuffer[1:1+datalen] = data
+		membuffer = bytearray(self.BUFFERSIZE * self.N_BYTESPER)
+		membuffer[:self.N_BYTESPER] = struct.pack('I', datalen)
+
+		start = self.N_BYTESPER
+		end = self.N_BYTESPER + (self.N_BYTESPER * datalen)
+		step = self.N_BYTESPER
+		membuffer[start:end:step] = data
 
 		def callback_wrapper():
-			result_length = max(membuffer[0], len(membuffer) - 1)
-			dataout = membuffer[1:1+result_length]
+			len_ind = struct.unpack('I', membuffer[:self.N_BYTESPER])[0]
+			result_length = min(len_ind, self.BUFFERSIZE - 1)
+			start = self.N_BYTESPER
+			end = self.N_BYTESPER + (self.N_BYTESPER * result_length)
+			step = self.N_BYTESPER
+			dataout = membuffer[start:end:step]
 
 			score = practice_callback(dataout)
 			return int(score)
 
-		membuffer_datatype = self.DATA_TYPE * buffersize
+		membuffer_datatype = self.DATA_TYPE * self.BUFFERSIZE
 		membuffer_carray = membuffer_datatype.from_buffer(membuffer) # allows mutation of membuffer in-place
 		membuffer_pointer = pointer(membuffer_carray)
 
@@ -185,8 +198,12 @@ class KreaProgram:
 
 		signal.alarm(0)
 
-		result_length = max(membuffer[0], len(membuffer) - 1)
-		dataout = membuffer[1:1+result_length]
+		len_ind = struct.unpack('I', membuffer[:self.N_BYTESPER])[0]
+		result_length = min(len_ind, self.BUFFERSIZE - 1)
+		start = self.N_BYTESPER
+		end = self.N_BYTESPER + (self.N_BYTESPER * result_length)
+		step = self.N_BYTESPER
+		dataout = membuffer[start:end:step]
 
 		return dataout
 
