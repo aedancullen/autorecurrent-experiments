@@ -43,7 +43,7 @@ class KreaProgram:
 
 		ir_module = llvmir.Module()
 
-		callback_func_t = llvmir.FunctionType(length_t, ())
+		callback_func_t = llvmir.FunctionType(cell_t, ())
 
 		krun_func_t = llvmir.FunctionType(llvmir.VoidType(), (cell_t.as_pointer(), callback_func_t.as_pointer()))
 		krun_func = llvmir.Function(ir_module, krun_func_t, "krun")
