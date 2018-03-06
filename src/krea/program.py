@@ -128,6 +128,7 @@ class KreaProgram:
 
 
 		krun_builder.ret_void()
+
 		return ir_module
 
 
@@ -179,6 +180,7 @@ class KreaProgram:
 			dataout = membuffer[start:end:step]
 
 			score = practice_callback(dataout)
+			score *= (2 ** self.DATA_UBITS - 1) / 255 ** 2
 			return int(score)
 
 		membuffer_datatype = self.DATA_TYPE * self.BUFFERSIZE
