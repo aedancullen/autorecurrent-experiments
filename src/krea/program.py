@@ -50,7 +50,7 @@ class KreaProgram:
 		krun_entry = krun_func.append_basic_block("entry")
 		krun_builder = llvmir.IRBuilder(krun_entry)
 
-		ptr, length, callback = krun_func.args
+		ptr, callback = krun_func.args
 
 		zero = cell_t(0)
 		one = cell_t(1)
