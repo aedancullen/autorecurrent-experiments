@@ -17,18 +17,15 @@ class KreaProgram:
 
 	program = None
 
-	DATA_TYPE = c_int
+	DATA_TYPE = c_uint
 	DATA_UBITS = 32
-
-	LENGTH_TYPE = c_int
-	LENGTH_UBITS = 32
 
 	BUFFERSIZE = 1024
 
 	N_BYTESPER = DATA_UBITS // 8
 
 	practice_functype = CFUNCTYPE(DATA_TYPE)
-	krun_functype = CFUNCTYPE(None, POINTER(DATA_TYPE * BUFFERSIZE), LENGTH_TYPE, practice_functype)
+	krun_functype = CFUNCTYPE(None, POINTER(DATA_TYPE * BUFFERSIZE), practice_functype)
 	compiler = None
 	krun = None
 
@@ -43,13 +40,12 @@ class KreaProgram:
 		# self.program in, ir_module out
 
 		cell_t = llvmir.IntType(self.DATA_UBITS)
-		length_t = llvmir.IntType(self.LENGTH_UBITS)
 
 		ir_module = llvmir.Module()
 
 		callback_func_t = llvmir.FunctionType(length_t, ())
 
-		krun_func_t = llvmir.FunctionType(llvmir.VoidType(), (cell_t.as_pointer(), length_t, callback_func_t.as_pointer()))
+		krun_func_t = llvmir.FunctionType(llvmir.VoidType(), (cell_t.as_pointer(), callback_func_t.as_pointer()))
 		krun_func = llvmir.Function(ir_module, krun_func_t, "krun")
 		krun_entry = krun_func.append_basic_block("entry")
 		krun_builder = llvmir.IRBuilder(krun_entry)
@@ -159,7 +155,7 @@ class KreaProgram:
 		self.krun = self.krun_functype(krun_pointer)
 
 
-	def run(self, data, practice_callback, buffersize=1024):
+	def run(self, data, practice_callback):
 
 		def unresponsive_handler(signum, frame):
 			raise ProgramUnresponsive()
@@ -194,7 +190,7 @@ class KreaProgram:
 		signal.signal(signal.SIGALRM, unresponsive_handler) # only on unix
 		signal.alarm(5)
 
-		self.krun(membuffer_pointer, buffersize, practice_function)
+		self.krun(membuffer_pointer, practice_function)
 
 		signal.alarm(0)
 
