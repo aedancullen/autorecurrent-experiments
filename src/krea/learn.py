@@ -35,7 +35,6 @@ class KreaLearn:
 
 			if score < highscore:
 				self.highscore = self.latest_score
-				self.program = self.latest_program
 
 				raise ScoreImproved()
 
@@ -48,6 +47,9 @@ class KreaLearn:
 				programdata_out = self.program.run(programdata, practice_callback)
 				practice_callback(programdata_out)
 			except ScoreImproved:
-				continue
-
-			return
+				pass
+			except program.ProgramUnresponsive:
+				pass
+			
+			# and proceed with newest program
+			self.program = self.latest_program
