@@ -21,15 +21,11 @@ class KreaLog:
 
 	def log_learn(self, highscore, latest_score, latest_program):
 		
-		logging.info("lv:learn\ths:{}\tls:{}".format(highscore, latest_score))
+		logging.info("high:{}\tlatest:{}".format(highscore, latest_score))
 
 		if latest_score == highscore:
 
 			name = self.output_directory + "/" + self.output_prefix + '-' + str(highscore) + ".kcl"
 			latest_program.to_file(name)
 
-			logging.info("lv:log\tWrote {}".format(name))
-
-	def log_practice(self, best_score, current_score, relevant_program):
-
-		logging.info("lv:practice\tbs:{}\tcs:{}".formate(best_score, current_score))
+			logging.info("Wrote {}".format(name))
