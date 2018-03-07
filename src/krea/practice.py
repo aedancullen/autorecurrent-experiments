@@ -49,8 +49,6 @@ class KreaPractice:
 		def pfunc(args):
 			program, inset, outset = args
 
-			best_score = 0
-
 			def test_callback(programdata_out):
 				program_out = program.KreaProgram.from_data(programdata_out)
 
@@ -73,20 +71,15 @@ class KreaPractice:
 
 				score = self.score(attempted_outset, outset)
 
-				#self.log.log_practice(best_score, score)
-
-				if score < best_score:
-					best_score = score
-
 				return score
 
 			try:
 				executable = program.run(program.KreaProgram.from_nothing().to_data(), test_callback)
-				test_callback(executable)
+				score = test_callback(executable)
 			except program.ProgramUnresponsive:
 				pass
 
-			return best_score
+			return score
 
 		
 		parallel_iterator = pool.imap_unordered(pfunc, iterator)
