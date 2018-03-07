@@ -21,7 +21,7 @@ class KreaLog:
 
 	def log_learn(self, highscore, latest_score, latest_program):
 		
-		logging.info("high:{}\tlatest:{}".format(highscore, latest_score))
+		logging.info("best:{}\tlatest:{}".format(highscore, latest_score))
 
 		if latest_score < highscore:
 
