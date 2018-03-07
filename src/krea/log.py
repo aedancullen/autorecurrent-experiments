@@ -23,9 +23,9 @@ class KreaLog:
 		
 		logging.info("high:{}\tlatest:{}".format(highscore, latest_score))
 
-		if latest_score == highscore:
+		if latest_score < highscore:
 
-			name = self.output_directory + "/" + self.output_prefix + '-' + str(highscore) + ".kcl"
+			name = self.output_directory + "/" + self.output_prefix + '-' + str(latest_score) + ".kcl"
 			latest_program.to_file(name)
 
 			logging.info("Wrote {}".format(name))
